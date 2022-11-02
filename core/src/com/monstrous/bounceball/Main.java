@@ -33,12 +33,12 @@ public class Main extends ApplicationAdapter {
 	private ErrorLog log;
 	private FrameRate frameRateCounter;
 	private World world;
+	private TestShader shader;
 
 	@Override
 	public void create () {
 
 		log = new ErrorLog();
-		log.addMessage("Init");
 
 		viewWidth = Gdx.graphics.getWidth();
 		viewHeight = Gdx.graphics.getHeight();
@@ -63,6 +63,12 @@ public class Main extends ApplicationAdapter {
 		modelBatch = new ModelBatch();
 
 		batch = new SpriteBatch();
+
+		shader = new TestShader( log, pointLight );
+		shader.init();
+		if(!shader.program.isCompiled())
+			shader = null;	// revert to default so that at least the error log will be visible
+
 
 		// full screen post processing shader
 		// vignette effect, i.e. darkened screen corners
@@ -123,7 +129,7 @@ public class Main extends ApplicationAdapter {
 
 		modelBatch.begin(cam);
 		for (ModelInstance instance : world.instances) {
-			modelBatch.render(instance, environment);
+			modelBatch.render(instance, environment, shader);
 		}
 		modelBatch.end();
 
@@ -158,6 +164,7 @@ public class Main extends ApplicationAdapter {
 		frameRateCounter.dispose();
 		log.dispose();
 		world.dispose();
+		shader.dispose();
 	}
 
 }

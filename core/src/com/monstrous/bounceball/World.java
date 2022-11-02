@@ -20,8 +20,8 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 
 public class World implements Disposable {
-    private static float GRAVITY = -1f;
-    private static float START_HEIGHT = 10f;
+    private static float GRAVITY = -18f;
+    private static float START_HEIGHT = 20f;
     private static float MAX_TILT = 10f;    // degrees
 
     private Model modelBall, modelTile;
@@ -38,6 +38,9 @@ public class World implements Disposable {
 
     public void init() {
         String TEX_PREFIX = "textures\\";
+
+        Texture textureBall = new Texture(Gdx.files.internal(TEX_PREFIX + "solid_ball.png"), false);
+        Texture textureBlack = new Texture(Gdx.files.internal(TEX_PREFIX + "solid_black.png"), false);
 
         Texture textureTile = new Texture(Gdx.files.internal(TEX_PREFIX + "204.jpg"), true);
         textureTile.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.Linear);
@@ -56,7 +59,8 @@ public class World implements Disposable {
 
 
         modelBall = modelBuilder.createSphere(1.5f, 1.5f, 1.5f, 16, 16,
-                new Material(ColorAttribute.createDiffuse(Color.ORANGE)),
+                //new Material(ColorAttribute.createDiffuse(Color.ORANGE)),
+                new Material(TextureAttribute.createDiffuse(textureBall)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates);
 
         modelTile = modelBuilder.createBox(4f, 0.2f, 4f,
@@ -64,7 +68,8 @@ public class World implements Disposable {
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates);
 
         Model modelFloor = modelBuilder.createBox(40f, 1f, 40f,
-                new Material(ColorAttribute.createDiffuse(Color.BLACK)),
+                //new Material(ColorAttribute.createDiffuse(Color.BLACK)),
+                new Material(TextureAttribute.createDiffuse(textureBlack)),
                 VertexAttributes.Usage.Position | VertexAttributes.Usage.Normal | VertexAttributes.Usage.TextureCoordinates);
 
         Model modelWall = modelBuilder.createBox(8f, 8f, 1f,
@@ -127,34 +132,52 @@ public class World implements Disposable {
     public void update( float deltaTime ) {
         time += deltaTime;
 
-        if(Gdx.input.isKeyPressed(Input.Keys.LEFT) && rotX < MAX_TILT)
-            rotX += 0.1f;
-        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) && rotX > -MAX_TILT)
-            rotX -= 0.1f;
+        float tiltSpeed = 80f;
 
-//        rotZ = 0.1f * (float) Math.sin(time*3f);
-//        rotX = 0.1f * (float) Math.cos(time*3f);
+        if(Gdx.input.isKeyPressed(Input.Keys.LEFT) && rotX < MAX_TILT)
+            rotX += tiltSpeed * deltaTime;
+        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) && rotX > -MAX_TILT)
+            rotX -= tiltSpeed * deltaTime;
+        if(Gdx.input.isKeyPressed(Input.Keys.UP) && rotZ < MAX_TILT)
+            rotZ += tiltSpeed * deltaTime;
+        if(Gdx.input.isKeyPressed(Input.Keys.DOWN) && rotZ > -MAX_TILT)
+            rotZ -= tiltSpeed * deltaTime;
 
         // tilt all the tiles in X and Z direction
         for (int i = 0; i < tiles.length; i++) {
             ModelInstance instance = tiles[i];
 
-            instance.transform.rotate(Vector3.Z, rotZ);
-            instance.transform.rotate(Vector3.X, rotX);
+            instance.transform.setFromEulerAngles(0,rotX, rotZ);
+            float z = (i / 10) * 4 -18;
+            float x = (i % 10) * 4 -18;
+            instance.transform.setTranslation(x, 0, z);
         }
 
+        // calculate tile normal vector
         tileNormal.set(0,1,0);
         tileNormal.rot(tiles[0].transform);
 
-        if(ballPosition.y <= 0) {// bounce on ground
-            ballVelocity.scl(-1f);
 
-            // reflect vector from plane: r = 2(d.n)n - d
-            float dot = ballVelocity.dot(tileNormal);
-            tmpV.set(tileNormal);
-            tmpV.scl(2*dot);
-            tmpV.sub(ballVelocity);
-            ballVelocity.set(tmpV);
+
+        if(ballPosition.y <= 0) {// bounce on ground
+
+
+            if(ballPosition.x < -20 || ballPosition.x > 20 || ballPosition.z < -20 || ballPosition.z > 20 ) // ball lands on ground outside court?
+            {
+                ballPosition.set(0,START_HEIGHT,0); // new ball
+                ballVelocity.set(0,0,0);
+            }
+            else {
+
+                ballVelocity.scl(-1f);
+
+                // reflect vector from plane: r = 2(d.n)n - d
+                float dot = ballVelocity.dot(tileNormal);
+                tmpV.set(tileNormal);
+                tmpV.scl(2 * dot);
+                tmpV.sub(ballVelocity);
+                ballVelocity.set(tmpV);
+            }
         }
 
         ballVelocity.y += GRAVITY * deltaTime;
