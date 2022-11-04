@@ -34,20 +34,24 @@ public class Main extends ApplicationAdapter {
 	private FrameRate frameRateCounter;
 	private World world;
 	private TestShader shader;
+	private GUI gui;
+	private Score score;
 
 	@Override
 	public void create () {
 
 		log = new ErrorLog();
+		score = new Score();
+		gui = new GUI(score);
 
 		viewWidth = Gdx.graphics.getWidth();
 		viewHeight = Gdx.graphics.getHeight();
 
 		cam = new PerspectiveCamera(67, viewWidth, viewHeight);
-		cam.position.set(10f, 5f, 5f);
+		cam.position.set(20f, 10f, 10f);
 		cam.lookAt(0, 0, 0);
 		cam.near = .1f;
-		cam.far = 300f;
+		cam.far = 100f;
 		cam.update();
 
 		camController = new CameraInputController(cam);
@@ -57,7 +61,7 @@ public class Main extends ApplicationAdapter {
 		environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.5f, 0.5f, 0.5f, 1f));
 		environment.add(pointLight = new PointLight().set(1, 1, 1, 3, 10, 5, 100));    // r,g,b, x,y,z, intensity
 
-		world = new World();
+		world = new World(score);
 		world.init();
 
 		modelBatch = new ModelBatch();
@@ -83,6 +87,8 @@ public class Main extends ApplicationAdapter {
 		ShaderProgram.pedantic = false;		// suppress warning about missing u_texture uniform in shader
 
 		frameRateCounter = new FrameRate();
+
+
 	}
 
 
@@ -104,6 +110,7 @@ public class Main extends ApplicationAdapter {
 		}
 		frameRateCounter.resize(width, height);
 		log.resize(width, height);
+		gui.resize(width, height);
 	}
 
 
@@ -112,7 +119,8 @@ public class Main extends ApplicationAdapter {
 	@Override
 	public void render () {
 
-		world.update( Gdx.graphics.getDeltaTime() );
+		float deltaTime = Gdx.graphics.getDeltaTime();
+		world.update( deltaTime );
 
 		camController.update();
 
@@ -152,6 +160,7 @@ public class Main extends ApplicationAdapter {
 		frameRateCounter.render();
 
 		log.render();
+		gui.render(deltaTime);
 
 	}
 
@@ -165,6 +174,7 @@ public class Main extends ApplicationAdapter {
 		log.dispose();
 		world.dispose();
 		shader.dispose();
+		gui.dispose();
 	}
 
 }

@@ -1,2 +1,10 @@
 Textures:
  rubberduck at OpenGameArt.org : https://opengameart.org/content/50-free-textures-5-with-normalmaps
+
+
+ todo:
+ - fade trail alpha
+ - particle effects
+ - scoring
+ - skybox
+ - collision with walls
