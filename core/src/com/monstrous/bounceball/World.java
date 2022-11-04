@@ -15,7 +15,6 @@ import com.badlogic.gdx.utils.Disposable;
 public class World implements Disposable {
     private static float GRAVITY = -18f;
     private static float START_HEIGHT = 14f;
-    private static float MAX_TILT = 10f;    // degrees
     private static int BALL_TRAIL_SIZE = 12;
 
     private Array<Model> models;
@@ -27,22 +26,23 @@ public class World implements Disposable {
     private ModelInstance targets[];
     private ModelInstance ballTrail[];
 
-    private float rotX, rotZ;		// tilt of tiles in X and Z direction
     private Vector3 tileNormal;
     private Vector3 ballPosition;
     private Vector3 ballVelocity;
     private Vector3 tmpV = new Vector3();
-    private float time;
     private BoundingBox bbox;
-//    private int score;
     private float trailTimer;       // to time the period between trail ghost balls
     private Score score;              // for call back e.g. updateScore()
+    private WorldController controller;
 
-    public World(Score score) {
+    public World(Score score, WorldController controller) {
         this.score = score;
+        this.controller = controller;
+
+        init();
     }
 
-    public void init() {
+    private void init() {
         String TEX_PREFIX = "textures\\";
 
         // create and position model instances
@@ -183,31 +183,23 @@ public class World implements Disposable {
 
         // general variables
 
-        rotX = 0;
-        rotZ = 0;
+//        rotX = 0;
+//        rotZ = 0;
         tileNormal = new Vector3( 0, 1, 0);
         ballPosition = new Vector3(0,START_HEIGHT,0);
         ballVelocity = new Vector3(0,0,0);
-        time = 0;
         bbox = new BoundingBox();
         score.setScore(0);
         trailTimer = 0;
+
     }
 
 
     public void update( float deltaTime ) {
-        time += deltaTime;
+        controller.update(deltaTime);
 
-        // get input
-        float tiltSpeed = 80f;
-        if(Gdx.input.isKeyPressed(Input.Keys.LEFT) && rotX < MAX_TILT)
-            rotX += tiltSpeed * deltaTime;
-        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) && rotX > -MAX_TILT)
-            rotX -= tiltSpeed * deltaTime;
-        if(Gdx.input.isKeyPressed(Input.Keys.UP) && rotZ < MAX_TILT)
-            rotZ += tiltSpeed * deltaTime;
-        if(Gdx.input.isKeyPressed(Input.Keys.DOWN) && rotZ > -MAX_TILT)
-            rotZ -= tiltSpeed * deltaTime;
+        float rotX = controller.rotX;
+        float rotZ = controller.rotZ;
 
         // tilt all the tiles in X and Z direction
         for (int i = 0; i < tiles.length; i++) {

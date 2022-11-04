@@ -5,6 +5,7 @@ Textures:
  todo:
  - game is too hard
  - collision with walls
+ - sometimes the ball squeezes past the tiles
 
 
  nice to have:

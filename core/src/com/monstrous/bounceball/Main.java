@@ -2,6 +2,7 @@ package com.monstrous.bounceball;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -36,6 +37,7 @@ public class Main extends ApplicationAdapter {
 	private TestShader shader;
 	private GUI gui;
 	private Score score;
+	private WorldController worldController;
 
 	@Override
 	public void create () {
@@ -43,6 +45,7 @@ public class Main extends ApplicationAdapter {
 		log = new ErrorLog();
 		score = new Score();
 		gui = new GUI(score);
+		worldController = new WorldController();
 
 		viewWidth = Gdx.graphics.getWidth();
 		viewHeight = Gdx.graphics.getHeight();
@@ -53,16 +56,20 @@ public class Main extends ApplicationAdapter {
 		cam.near = .1f;
 		cam.far = 100f;
 		cam.update();
-
 		camController = new CameraInputController(cam);
-		Gdx.input.setInputProcessor(camController);
+
+		InputMultiplexer multiplexer = new InputMultiplexer();
+		multiplexer.addProcessor(gui.stage);
+		multiplexer.addProcessor(camController);
+		multiplexer.addProcessor(worldController);
+		Gdx.input.setInputProcessor(multiplexer);
 
 		environment = new Environment();
 		environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.5f, 0.5f, 0.5f, 1f));
 		environment.add(pointLight = new PointLight().set(1, 1, 1, 3, 10, 5, 100));    // r,g,b, x,y,z, intensity
 
-		world = new World(score);
-		world.init();
+		world = new World(score, worldController);
+//		world.init();
 
 		modelBatch = new ModelBatch();
 
