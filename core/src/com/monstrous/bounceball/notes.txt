@@ -3,8 +3,13 @@ Textures:
 
 
  todo:
- - fade trail alpha
- - particle effects
- - scoring
- - skybox
+ - game is too hard
  - collision with walls
+
+
+ nice to have:
+  - fade trail alpha
+  - particle effects
+  - skybox
+  - stretched/squeezed textures
+

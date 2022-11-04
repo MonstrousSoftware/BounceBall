@@ -17,6 +17,7 @@ public class GUI implements Disposable {
     private Label labelScore;
     private Score score;
     private int scoreValue;
+    private StringBuilder sb;
 
     public GUI( Score score ) {
         this.score = score;
@@ -43,12 +44,18 @@ public class GUI implements Disposable {
 
         screenTable.pack();
         scoreValue = -1;    // to trigger update
+        sb = new StringBuilder();
     }
 
     public void render( float delta ) {
-        if(score.getScore() != scoreValue ) {   // has score changed? (check to avoid calling String.format at every frame)
+        if(score.getScore() != scoreValue ) {   // has score changed? (check to avoid changing label text at every frame)
             scoreValue = score.getScore();
-            labelScore.setText(String.format("SCORE: %d", scoreValue));
+
+            // use StringBuilder instead of String.format because that is not supported by GWT for the HTML version
+            sb.setLength(0);
+            sb.append("SCORE : ");
+            sb.append(scoreValue);
+            labelScore.setText(sb.toString());
         }
 
         stage.act(delta);
